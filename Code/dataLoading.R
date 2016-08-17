@@ -10,6 +10,13 @@ library(zoo)
 
 # --------------------------------------------------------------------------------- Loading RAW data
 
+# La base Etalab de données des accidents corporels de la circulation d'une année donnée, est répartie
+# en 4 rubriques sous la forme pour chacune d'elles d'un fichier au format csv.
+#    1. La rubrique CARACTERISTIQUES qui décrit les circonstances générales de l’accident
+#    2. La rubrique LIEUX qui décrit le lieu principal de l’accident
+#    3. La rubrique VEHICULES impliqués
+#    4. La rubrique USAGERS impliqués
+
 Caracteristiques <- list(
   C2009       = read_delim(paste0(wd,"caracteristiques_2009.csv?raw=true"),delim="\t",col_types="ciiiiiiiiiicc??i"),
   C2010       = read_csv(paste0(wd,"caracteristiques_2010.csv?raw=true"),col_types="ciiiiiiiiiicc??i"),
