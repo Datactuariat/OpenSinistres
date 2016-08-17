@@ -60,3 +60,6 @@ Caracteristiques[,date:=as.Date(paste(2000+an,mois,jour,sep="-"),"%Y-%m-%d")]
 Usagers <- rbindlist(Usagers,fill=TRUE)
 Vehicules <- rbindlist(Vehicules)
 Lieux <- rbindlist(Lieux,fill=TRUE)
+
+# -------------------
+cat("test")
