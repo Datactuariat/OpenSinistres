@@ -42,7 +42,8 @@ sKDE <- function(U, polygon, optimal = TRUE, h = .1, parallel = FALSE, n_cluster
   # Help function to compute weights
   poidsU <- function(i, U, h, POL){
     x <- as.numeric(U[i,])
-    sWeights(x, h, POL)
+    res <- sWeights(x, h, POL)
+    return(ifelse(res==0,1,res) )
   }
   # Use parallel methods to compute if the number of observation is a bit high
   # Change the number of slaves according to the number of cores your processor has
