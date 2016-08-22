@@ -1,0 +1,102 @@
+plot_sKDE_real2 <- function(smooth, breaks, polygon, coord, alpha_coords = .8, size_coords = .8,
+                       many_points = FALSE,
+                       colContour="white",
+                       colPoints="dodger blue", title, contour=TRUE,
+                       round = 2, text_size = 22,show.points=FALSE){
+
+col <- rev( viridis(20) )
+
+theMap <- get_map( location =c( left =min (polygon[,1]) , bottom =min (polygon[ ,2]) , right =max (polygon[ ,1]) , 
+                                top =max (polygon[,2])), source="google", messaging =FALSE, color ="bw")
+
+getMelt <- function ( smoothed ){
+  res <- melt( smoothed $ZNA)
+  res [ ,1] <- smoothed$X[res[ ,1]]
+  res [ ,2] <- smoothed$Y[res[ ,2]]
+  names(res) <- list ("X","Y","ZNA")
+  return(res)
+}
+
+smCont <- getMelt ( smooth )
+if(missing(breaks)) breaks <- seq(min(smooth$Z)*.95,max(smooth$Z)*1.05,length=21)
+smCont$colour <- cut(smCont[,"ZNA"],breaks=breaks,labels=round(breaks[-1],digits=round))
+smCont$colour2 <- as.character(cut(smCont[,"ZNA"],breaks=breaks,labels=rev(viridis(length(breaks)-1))))
+
+theLabels <- round(breaks ,2)
+indLabels <- floor(seq (1, length( theLabels ),length.out =5)) 
+indLabels[length( indLabels )] <- length( theLabels ) 
+theLabels <- as.character( theLabels[ indLabels ])
+theLabels[theLabels =="0"] <- " 0.00 "
+
+if(is.null(polygon$group)) polygon$group <- factor(1)
+#   
+#   P <- ggplot() +
+#     geom_polygon(data = polygon,  aes(x = long, y = lat, group = group),
+#                  fill = NA, col = "black") +
+#     geom_tile(aes(x = X, y = Y, fill = ZNA),
+#               alpha = .9, data = smCont[!is.na(smCont$ZNA),], na.rm=TRUE)
+
+P <- ggmap(theMap)
+P <- P + geom_tile(aes(x=X, y=Y, fill=ZNA),alpha =.6,data=smCont[!is.na( smCont$ZNA),],na.rm=TRUE)
+
+#   if(contour){
+#     P <- P + geom_contour(data=smCont[!is.na(smCont$ZNA),],aes(x=X, y=Y, z=ZNA ), alpha =0.5 , colour ="white")  
+#   }
+
+
+
+P<-P+theme(panel.grid.minor=element_line(colour=NA),panel.grid.minor=element_line(colour=NA),panel.background=
+             element_rect(fill=NA,colour=NA),axis.text.x=element_blank(),
+           axis.text.y=element_blank(),axis.ticks.x=element_blank(),
+           axis.ticks.y=element_blank(),axis.title=element_blank(),rect=element_blank())
+
+if(contour) P <- P + geom_contour(data = smCont[!is.na(smCont$ZNA),],
+                                  aes(x = X, y = Y, z = ZNA),
+                                  alpha=0.6,  colour = colContour,
+                                  breaks = breaks[indLabels])
+many_points=FALSE
+if(many_points){
+  P <- P + geom_point(data = coord, aes(x = long, y = lat, alpha = ".count"),
+                      col = colSia, size = size_coords) +
+    scale_alpha_continuous(guide=FALSE)
+}
+
+if(show.points){
+  P <- P + geom_point(data = coord[,c("long", "lat")], aes(x = long, y = lat),
+                      alpha = alpha_coords, col = colSia, size = size_coords)
+}
+
+
+if(contour){
+  # To add contour levels
+  ind_level <- which(unlist(lapply(ggplot_build(P)$data, function(x) "level" %in% colnames(x))))
+  tmp <- ggplot_build(P)$data[[ind_level]]
+  ind <- unlist(lapply(unique(tmp$piece), function(x){
+    corresp <- which(tmp$piece == x)
+    corresp[round(length(corresp)/2)]
+  }))
+  tmp$level_r <- round(tmp$level, round)
+  P <- P + geom_text(aes(label = level_r, z = NULL, x = x, y = y), data=tmp[ind,],color="white",alpha=0.8)
+}
+
+#   P <- P + scale_fill_gradient(name="",low='yellow', high='red',
+#                                breaks=breaks[indLabels],
+#                                limits=range(breaks),labels=theLabels)
+P <- P + scale_colour_gradientn(colours=rev(col),breaks = breaks[indLabels], limits = range(breaks),labels = theLabels)
+# p <- p + scale_fill_viridis()
+
+P <- P + theme(axis.text.x=element_blank(),
+               axis.text.y=element_blank(),
+               axis.ticks.x=element_blank(),
+               axis.ticks.y=element_blank(),
+               axis.title=element_blank(),
+               text = element_text(size = text_size))
+
+P <- P + scale_fill_viridis()
+
+P <- P + geom_polygon(data=polygon, mapping=(aes(x=long, y=lat)),
+                      colour="black", fill=NA) + scale_fill_viridis()
+# Add a title if one was provided
+if(!missing(title)) P <- P + ggtitle(title)
+P
+}
