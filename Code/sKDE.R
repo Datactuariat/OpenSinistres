@@ -241,7 +241,7 @@ plot_sKDE_real <- function(smooth, breaks, polygon, coord, alpha_coords = .8, si
     return(res)
   }
   
-  smCont <- getMelt ( result )
+  smCont <- getMelt ( smooth )
   if(missing(breaks)) breaks <- seq(min(smooth$Z)*.95,max(smooth$Z)*1.05,length=21)
   smCont$colour <- cut(smCont[,"ZNA"],breaks=breaks,labels=round(breaks[-1],digits=round))
   smCont$colour2 <- as.character(cut(smCont[,"ZNA"],breaks=breaks,labels=rev(viridis(length(breaks)-1))))
