@@ -426,3 +426,22 @@ P
 }
 
 
+sKDEoutputToSpat <- function(smoothed){
+  library(raster)
+  library(rgdal)
+  tbr <- smoothed
+  tbr$x <- tbr$X
+  tbr$y <- tbr$Y
+  tbr$z <- tbr$ZNA
+  r = raster(tbr)
+  crs(r) <- "+proj=lcc +lat_1=48 +lat_2=33 +lon_0=-100 +ellps=WGS84"
+  projection(r)
+  r.pts <- rasterToPoints(r, spatial=TRUE)
+  proj4string(r.pts)
+  geo.prj <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0" 
+  r.pts <- spTransform(r.pts, CRS(geo.prj)) 
+  proj4string(r.pts)
+  r.pts@data <- data.frame(r.pts@data, long=coordinates(r.pts)[,1],
+                           lat=coordinates(r.pts)[,2]) 
+  return(r.pts)
+}
